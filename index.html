@@ -1,0 +1,395 @@
+<title>Ati's Birthday Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Instrument+Serif:ital@0;1&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Layout: a line-drawn envelope cover opens onto a short scrolling keepsake card, photo up top */
+    --bg:#fbf0f1;
+    --surface:#fff8f7;
+    --ink:#2b1b22;
+    --ink-soft:#85636c;
+    --rose:#b3365a;
+    --gold:#a8752e;
+    --font-display:'Instrument Serif', Georgia, 'Times New Roman', serif;
+    --font-body:'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-hand:'Caveat', cursive;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1c1016;
+      --surface:#2a1720;
+      --ink:#f5e9ea;
+      --ink-soft:#bb929a;
+      --rose:#e35c82;
+      --gold:#e0a95c;
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1c1016;
+    --surface:#2a1720;
+    --ink:#f5e9ea;
+    --ink-soft:#bb929a;
+    --rose:#e35c82;
+    --gold:#e0a95c;
+    color-scheme:dark;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{overflow-x:hidden;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.55;
+  }
+  h1,h2{text-wrap:balance;margin:0;font-weight:400;}
+  p{margin:0;}
+  button{font-family:inherit;}
+  :focus-visible{outline:2px solid var(--rose);outline-offset:3px;}
+
+  .wrap{max-width:30rem;margin:0 auto;padding-inline:20px;}
+  section{padding-block:52px 28px;text-align:center;position:relative;}
+
+  #confetti-canvas{position:fixed;inset:0;z-index:60;pointer-events:none;}
+
+  #cover{
+    position:fixed;inset:0;z-index:50;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+    background:var(--bg);color:var(--ink);text-align:center;padding:24px;
+    transition:transform .8s cubic-bezier(.6,0,.3,1), opacity .6s ease;
+  }
+  #cover.opened{transform:translateY(-100%);opacity:0;pointer-events:none;}
+  .env-icon,.note-icon{fill:none;stroke:var(--ink);stroke-width:1.5;display:block;}
+  .env-icon{width:132px;height:92px;}
+  .note-icon{width:92px;height:64px;margin:18px auto 0;}
+  .for-name{font-family:var(--font-hand);font-size:40px;line-height:1;color:var(--rose);}
+  .for-date{font-family:var(--font-body);font-size:13px;color:var(--ink-soft);letter-spacing:.03em;}
+  .open-cta{
+    margin-top:16px;border:1px solid var(--ink);background:none;color:var(--ink);
+    font-family:var(--font-body);font-size:13px;letter-spacing:.08em;text-transform:uppercase;
+    padding:11px 30px;border-radius:999px;cursor:pointer;appearance:none;-webkit-appearance:none;
+    transition:background .2s ease,color .2s ease;
+  }
+  .open-cta:hover{background:var(--ink);color:var(--surface);}
+
+  main{position:relative;z-index:1;}
+
+  .eyebrow{display:block;font-family:var(--font-body);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+  h2.title{font-family:var(--font-display);font-style:italic;font-size:28px;color:var(--ink);}
+
+  #overture h1{font-family:var(--font-display);font-style:italic;font-size:40px;color:var(--ink);}
+  #overture .lede{color:var(--ink-soft);font-size:15px;margin-top:12px;max-width:26rem;margin-inline:auto;}
+
+  .photo-card{
+    display:inline-block;background:var(--surface);padding:10px 10px 30px;border-radius:3px;
+    box-shadow:0 1px 0 rgba(0,0,0,.04),0 14px 30px rgba(43,27,34,.16);
+    transform:rotate(-2.5deg);margin-top:26px;max-width:260px;width:80%;
+  }
+  .photo-card img{display:block;width:100%;height:auto;border-radius:2px;}
+  .photo-card .cap{font-family:var(--font-hand);font-size:19px;color:var(--ink-soft);margin-top:10px;}
+
+  .cake-box{margin:22px auto 0;}
+  .flame{transition:opacity .35s ease, transform .35s ease;transform-box:fill-box;transform-origin:50% 100%;}
+  .flame.off{opacity:0;transform:scaleY(.1);}
+  #wish-line{min-height:26px;margin-top:12px;font-family:var(--font-hand);font-size:20px;color:var(--rose);}
+  .relight{display:block;margin:6px auto 0;background:none;border:none;font-family:var(--font-body);font-size:12px;color:var(--ink-soft);text-decoration:underline;cursor:pointer;}
+
+  .flip-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:22px;}
+  .flip{perspective:900px;height:150px;border:none;background:none;padding:0;appearance:none;-webkit-appearance:none;font:inherit;color:inherit;text-align:inherit;cursor:pointer;width:100%;}
+  .flip-face{position:relative;width:100%;height:100%;transition:transform .55s ease;transform-style:preserve-3d;}
+  .flip.open .flip-face{transform:rotateY(180deg);}
+  .f-front,.f-back{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;}
+  .f-front{background:var(--surface);box-shadow:0 1px 0 rgba(0,0,0,.04),0 8px 20px rgba(43,27,34,.08);}
+  .f-front .mark{font-size:22px;margin-bottom:6px;}
+  .f-front .lbl{font-family:var(--font-body);font-weight:600;font-size:13px;}
+  .f-back{background:var(--rose);color:#fff;transform:rotateY(180deg);font-size:12.5px;line-height:1.45;}
+  .hint{font-size:12px;color:var(--ink-soft);margin-top:12px;}
+
+  #pop-line{min-height:48px;font-family:var(--font-hand);font-size:22px;color:var(--rose);margin:14px 0 2px;}
+  .balloon-row{display:flex;justify-content:space-between;align-items:flex-end;height:148px;margin-top:4px;}
+  .balloon{position:relative;width:15%;max-width:46px;height:58px;border-radius:50%/58% 58% 42% 42%;border:none;padding:0;cursor:pointer;appearance:none;-webkit-appearance:none;transition:transform .22s ease, opacity .22s ease;}
+  .balloon:before{content:"";position:absolute;left:50%;bottom:-16px;width:1px;height:16px;background:var(--ink-soft);opacity:.5;}
+  .balloon:after{content:"";position:absolute;left:50%;bottom:-3px;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:6px solid currentColor;transform:translateX(-50%);}
+  .balloon.popped{transform:scale(0);opacity:0;pointer-events:none;}
+
+  .letter-cta{display:block;margin:10px auto 0;background:none;border:none;font-family:var(--font-body);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);cursor:pointer;}
+  .letter-page{display:none;text-align:left;background:var(--surface);border-radius:14px;padding:26px 22px;margin-top:18px;box-shadow:0 1px 0 rgba(0,0,0,.04),0 10px 26px rgba(43,27,34,.1);font-family:var(--font-hand);font-size:20px;line-height:1.6;color:var(--ink);white-space:pre-line;}
+  .letter-page.show{display:block;}
+
+  footer{padding-block:40px 64px;text-align:center;color:var(--ink-soft);font-size:12px;}
+  footer .heart{color:var(--rose);}
+</style>
+
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+<div id="cover">
+  <svg class="env-icon" viewBox="0 0 150 104" aria-hidden="true">
+    <rect x="2" y="2" width="146" height="100" rx="3"></rect>
+    <polyline points="2,4 75,58 148,4"></polyline>
+  </svg>
+  <span class="for-name">For Ati</span>
+  <span class="for-date">happy birthday</span>
+  <button type="button" class="open-cta" id="open-cover" aria-label="Open your card">Open</button>
+</div>
+
+<main id="content">
+
+  <section id="overture" class="wrap">
+    <h1>Happy Birthday, Ati</h1>
+    <p class="lede">Today's the day — and I wanted to make it a little more special.</p>
+    <div class="photo-card">
+      <img src="ati-photo.jpg" alt="Ati and a friend standing together outdoors, smiling">
+      <p class="cap">you, being you</p>
+    </div>
+  </section>
+
+  <section id="ch-cake" class="wrap">
+    <span class="eyebrow">Make A Wish</span>
+    <h2 class="title">Blow Out The Candles</h2>
+    <div class="cake-box">
+      <svg width="210" height="160" viewBox="0 0 210 160" aria-hidden="true">
+        <ellipse class="flame" id="fl1" cx="58" cy="34" rx="5" ry="10" fill="var(--gold)"></ellipse>
+        <ellipse class="flame" id="fl2" cx="90" cy="26" rx="5" ry="10" fill="var(--gold)"></ellipse>
+        <ellipse class="flame" id="fl3" cx="122" cy="34" rx="5" ry="10" fill="var(--gold)"></ellipse>
+        <ellipse class="flame" id="fl4" cx="154" cy="26" rx="5" ry="10" fill="var(--gold)"></ellipse>
+        <rect x="55" y="41" width="6" height="20" fill="var(--rose)"></rect>
+        <rect x="87" y="33" width="6" height="28" fill="var(--ink)"></rect>
+        <rect x="119" y="41" width="6" height="20" fill="var(--gold)"></rect>
+        <rect x="151" y="33" width="6" height="28" fill="var(--rose)"></rect>
+        <rect x="28" y="61" width="154" height="38" rx="6" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"></rect>
+        <rect x="18" y="99" width="174" height="46" rx="8" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"></rect>
+        <line x1="28" y1="80" x2="182" y2="80" stroke="var(--rose)" stroke-width="2"></line>
+        <line x1="18" y1="122" x2="192" y2="122" stroke="var(--gold)" stroke-width="2"></line>
+      </svg>
+    </div>
+    <div id="wish-line"></div>
+    <button type="button" class="open-cta" id="blow-btn">Blow out the candles</button>
+    <button type="button" class="relight" id="relight-btn" hidden>light them again</button>
+  </section>
+
+  <section id="ch-wishes" class="wrap">
+    <span class="eyebrow">Why We Love You</span>
+    <h2 class="title">A Few Reasons</h2>
+    <div class="flip-grid" id="flip-grid"></div>
+    <p class="hint">tap a card</p>
+  </section>
+
+  <section id="ch-pop" class="wrap">
+    <span class="eyebrow">Pop These</span>
+    <h2 class="title">One At A Time</h2>
+    <div id="pop-line"></div>
+    <div class="balloon-row" id="balloon-row"></div>
+  </section>
+
+  <section id="ch-letter" class="wrap">
+    <span class="eyebrow">From Me To You</span>
+    <h2 class="title">One More Thing</h2>
+    <svg class="note-icon" viewBox="0 0 96 68" aria-hidden="true">
+      <rect x="1" y="1" width="94" height="66" rx="2"></rect>
+      <polyline points="1,3 48,38 95,3"></polyline>
+    </svg>
+    <button type="button" class="letter-cta" id="letter-btn">Read it</button>
+    <div class="letter-page" id="letter-page">Dear Ati,
+
+It's your day today, and I didn't want it to pass without saying a few things.
+
+Thank you for every late-night conversation, every laugh that doubled me over, and every time you showed up without needing to be asked.
+
+I hope today treats you exactly as well as you treat everyone around you.
+
+Happy birthday. I'm lucky to call you my friend.
+
+With love,
+Makson</div>
+  </section>
+
+  <footer>made by hand, in code, for Ati <span class="heart">&hearts;</span></footer>
+
+</main>
+
+<script>
+(function(){
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function cssVar(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  /* confetti: self-contained canvas particles, no external library */
+  var canvas = document.getElementById('confetti-canvas');
+  var ctx = canvas.getContext('2d');
+  var particles = [];
+  var running = false;
+  function sizeCanvas(){
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  sizeCanvas();
+  window.addEventListener('resize', sizeCanvas);
+  function burst(xRatio, yRatio, count){
+    if (reduceMotion) return;
+    var colors = [cssVar('--rose'), cssVar('--gold'), cssVar('--ink-soft')];
+    var ox = xRatio * window.innerWidth;
+    var oy = yRatio * window.innerHeight;
+    for (var i = 0; i < count; i++){
+      var angle = Math.random() * Math.PI * 2;
+      var speed = 2 + Math.random() * 4.5;
+      particles.push({
+        x: ox, y: oy,
+        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 3.5,
+        size: 3 + Math.random() * 4, color: colors[i % colors.length],
+        rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3,
+        life: 50 + Math.random() * 30
+      });
+    }
+    if (!running){ running = true; requestAnimationFrame(step); }
+  }
+  function step(){
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    var alive = [];
+    for (var i = 0; i < particles.length; i++){
+      var p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.13; p.rot += p.vr; p.life--;
+      if (p.life > 0 && p.y < window.innerHeight + 30){
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.globalAlpha = Math.min(1, p.life / 18);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        ctx.restore();
+        alive.push(p);
+      }
+    }
+    particles = alive;
+    if (particles.length > 0){ requestAnimationFrame(step); }
+    else { running = false; ctx.clearRect(0, 0, window.innerWidth, window.innerHeight); }
+  }
+
+  /* shared chime: a generic three-note cheer, not any existing song */
+  var audioCtx = null;
+  function chime(){
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      if (!audioCtx) audioCtx = new Ctx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      [523.25, 659.25, 783.99].forEach(function(freq, i){
+        var osc = audioCtx.createOscillator();
+        var gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        var start = audioCtx.currentTime + i * 0.12;
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.15, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.35);
+        osc.start(start);
+        osc.stop(start + 0.4);
+      });
+    }catch(e){}
+  }
+
+  /* cover */
+  var cover = document.getElementById('cover');
+  var opened = false;
+  document.body.style.overflow = 'hidden';
+  function openCover(){
+    if (opened) return;
+    opened = true;
+    chime();
+    burst(0.5, 0.35, 90);
+    cover.classList.add('opened');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('open-cover').addEventListener('click', openCover);
+
+  /* cake */
+  var flameIds = ['fl1', 'fl2', 'fl3', 'fl4'];
+  function blowCandles(){
+    flameIds.forEach(function(id, i){
+      setTimeout(function(){ document.getElementById(id).classList.add('off'); }, i * 200);
+    });
+    setTimeout(function(){
+      burst(0.5, 0.4, 80);
+      chime();
+      document.getElementById('wish-line').textContent = 'may it come true, Ati';
+    }, flameIds.length * 200 + 150);
+    document.getElementById('blow-btn').hidden = true;
+    document.getElementById('relight-btn').hidden = false;
+  }
+  function relightCandles(){
+    flameIds.forEach(function(id){ document.getElementById(id).classList.remove('off'); });
+    document.getElementById('wish-line').textContent = '';
+    document.getElementById('blow-btn').hidden = false;
+    document.getElementById('relight-btn').hidden = true;
+  }
+  document.getElementById('blow-btn').addEventListener('click', blowCandles);
+  document.getElementById('relight-btn').addEventListener('click', relightCandles);
+
+  /* wishes */
+  var wishes = [
+    {m:'🌸', l:'Your Kindness', t:'You make people feel seen. That is rarer than it sounds.'},
+    {m:'😂', l:'Your Laughter', t:'Loud, unmistakable, and one of my favorite sounds.'},
+    {m:'💪', l:'Your Strength', t:'You carry hard things with more grace than you give yourself credit for.'},
+    {m:'🤝', l:'This Friendship', t:'One of my favorite constants, through every version of us.'},
+    {m:'🌙', l:'Your Dreams', t:'Here is to chasing every one of them, out loud.'},
+    {m:'✨', l:'Just You', t:'No upgrades needed. You are already the best version.'}
+  ];
+  var grid = document.getElementById('flip-grid');
+  wishes.forEach(function(w){
+    var card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'flip';
+    card.innerHTML = '<div class="flip-face"><div class="f-front"><div class="mark">' + w.m + '</div><div class="lbl">' + w.l + '</div></div><div class="f-back">' + w.t + '</div></div>';
+    card.addEventListener('click', function(){ card.classList.toggle('open'); });
+    grid.appendChild(card);
+  });
+
+  /* balloon pop, builds a message */
+  var words = ['You', 'make', 'every', 'day', 'brighter,', 'Ati.'];
+  var balloonColors = [cssVar('--rose'), cssVar('--gold')];
+  var row = document.getElementById('balloon-row');
+  var popLine = document.getElementById('pop-line');
+  var revealed = [];
+  words.forEach(function(word, i){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'balloon';
+    b.style.background = balloonColors[i % 2];
+    b.style.color = balloonColors[i % 2];
+    b.setAttribute('aria-label', 'pop a balloon');
+    b.addEventListener('click', function(){
+      if (b.classList.contains('popped')) return;
+      b.classList.add('popped');
+      var r = b.getBoundingClientRect();
+      burst((r.left + r.width / 2) / window.innerWidth, r.top / window.innerHeight, 28);
+      revealed[i] = word;
+      popLine.textContent = revealed.filter(Boolean).join(' ');
+      if (revealed.filter(Boolean).length === words.length){
+        setTimeout(function(){ burst(0.5, 0.4, 110); }, 250);
+      }
+    });
+    row.appendChild(b);
+  });
+
+  /* letter */
+  var letterOpen = false;
+  var letterBtn = document.getElementById('letter-btn');
+  var letterPage = document.getElementById('letter-page');
+  letterBtn.addEventListener('click', function(){
+    letterOpen = !letterOpen;
+    letterPage.classList.toggle('show', letterOpen);
+    letterBtn.textContent = letterOpen ? 'Close' : 'Read it';
+    if (letterOpen) burst(0.5, 0.3, 50);
+  });
+})();
+</script>
